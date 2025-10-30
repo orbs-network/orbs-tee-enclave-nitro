@@ -3,10 +3,10 @@
     "allow": [
       "Bash(cargo:*)",
       "Bash(rustc:*)",
-      "Read(//Users/ami/orbs/orbs-tee-protocol/**)",
       "Bash(find:*)",
       "Bash(cat:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(rustup:*)"
     ],
     "deny": [],
     "ask": []
