@@ -5,20 +5,35 @@ edition = "2021"
 description = "ORBS TEE Framework SDK for AWS Nitro Enclaves"
 
 [dependencies]
+# Async runtime - needed for async/await in Rust
 tokio = { version = "1.35", features = ["full"] }
-aws-nitro-enclaves-nsm-api = "0.4"
-secp256k1 = { version = "0.28", features = ["rand"] }
-sha2 = "0.10"
-rand = "0.8"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-vsock = "0.3"
-thiserror = "1.0"
-async-trait = "0.1"
-chrono = "0.4"
-hex = "0.4"
-libc = "0.2"
 
-[dependencies.orbs-tee-protocol]
-git = "https://github.com/orbs-network/orbs-tee-protocol"
-path = "rust"
+# AWS Nitro Enclaves SDK for attestation
+aws-nitro-enclaves-nsm-api = "0.4"
+
+# Cryptography
+secp256k1 = { version = "0.28", features = ["rand"] }  # ECDSA signing
+sha2 = "0.10"                                          # SHA-256 hashing
+rand = "0.8"                                           # Random number generation
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }     # Serialize/deserialize
+serde_json = "1.0"                                     # JSON support
+
+# vsocket support (Nitro-specific)
+vsock = "0.3"                                          # vsocket communication
+
+# Error handling
+thiserror = "1.0"                                      # Better error types
+
+# Async trait support
+async-trait = "0.1"                                    # Allows async in traits
+
+# Time
+chrono = "0.4"                                         # Date/time handling
+
+# Hex encoding
+hex = "0.4"                                            # For hex encoding/decoding
+
+# Additional dependencies
+libc = "0.2"                                           # For closing file descriptors

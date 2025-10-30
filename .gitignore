@@ -1,0 +1,49 @@
+# Rust build artifacts
+target/
+Cargo.lock
+
+# Rust debug/release builds
+debug/
+release/
+
+# Environment files (may contain secrets)
+.env
+.env.local
+.env.*.local
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+
+# OS-specific
+Thumbs.db
+
+# Backup files
+*.bak
+*.tmp
+
+# Documentation build artifacts
+book/
+
+# Testing artifacts
+*.profraw
+*.profdata
+
+# AWS credentials (never commit these)
+credentials
+config
+*.pem
+*.key
+
+# Nitro Enclave specific
+*.eif
+
+# Claude Code documentation
+CLAUDE.md
