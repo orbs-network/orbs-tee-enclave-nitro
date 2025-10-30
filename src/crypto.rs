@@ -69,7 +69,7 @@ impl KeyManager {
         let hash = hasher.finalize();
         
         // Convert hash to secp256k1 Message type
-        let message = Message::from_slice(&hash)?;
+        let message = Message::from_digest_slice(&hash)?;
         
         // Sign the message with our private key
         let signature = self.secp.sign_ecdsa(&message, &self.private_key);
@@ -100,3 +100,4 @@ impl Clone for KeyManager {
         }
     }
 }
+

@@ -6,13 +6,13 @@ description = "ORBS TEE Framework SDK for AWS Nitro Enclaves"
 
 [dependencies]
 # ORBS TEE Protocol
-orbs-tee-protocol = { path = "../orbs-tee-protocol/rust" }
+orbs-tee-protocol = "0.1.4"
 
 # Async runtime - needed for async/await in Rust
 tokio = { version = "1.35", features = ["full"] }
 
-# AWS Nitro Enclaves SDK for attestation
-aws-nitro-enclaves-nsm-api = "0.4"
+# AWS Nitro Enclaves SDK for attestation (Linux-only)
+aws-nitro-enclaves-nsm-api = { version = "0.4", optional = true }
 
 # Cryptography
 secp256k1 = { version = "0.28", features = ["rand"] }  # ECDSA signing
@@ -23,8 +23,8 @@ rand = "0.8"                                           # Random number generatio
 serde = { version = "1.0", features = ["derive"] }     # Serialize/deserialize
 serde_json = "1.0"                                     # JSON support
 
-# vsocket support (Nitro-specific)
-vsock = "0.3"                                          # vsocket communication
+# vsocket support (Nitro-specific, Linux-only)
+vsock = { version = "0.3", optional = true }           # vsocket communication
 
 # Error handling
 thiserror = "1.0"                                      # Better error types
@@ -40,3 +40,7 @@ hex = "0.4"                                            # For hex encoding/decodi
 
 # Additional dependencies
 libc = "0.2"                                           # For closing file descriptors
+
+[features]
+default = ["nitro"]
+nitro = ["aws-nitro-enclaves-nsm-api", "vsock"]  # Enable Nitro-specific features
