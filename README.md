@@ -136,7 +136,7 @@ Communication layer:
 - Handles concurrent connections
 
 ### 6. Protocol
-Request/response data structures:
+Request/response data structures from the shared `orbs-tee-protocol` package:
 
 ```rust
 pub struct TeeRequest {
@@ -154,6 +154,8 @@ pub struct TeeResponse {
     pub error: Option<String>,
 }
 ```
+
+Note: These types are imported from the [`orbs-tee-protocol`](https://github.com/orbs-network/orbs-tee-protocol) package, which provides shared protocol definitions for both Rust (enclave) and TypeScript (host) implementations.
 
 ## Complete Example: Price Oracle
 

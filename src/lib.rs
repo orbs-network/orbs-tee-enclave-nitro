@@ -6,11 +6,12 @@ pub mod app;
 pub mod nitro;      // Nitro-specific attestation
 pub mod crypto;
 pub mod vsock;
-pub mod protocol;
+
+// Re-export protocol types from the shared protocol package
+pub use orbs_tee_protocol::{TeeRequest, TeeResponse};
 
 // Import the main types to re-export them
 use app::EnclaveRuntime;
-use protocol::{TeeRequest, TeeResponse};
 
 // Error types that can be returned
 #[derive(Debug, thiserror::Error)]

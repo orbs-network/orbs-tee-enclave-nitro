@@ -5,6 +5,9 @@ edition = "2021"
 description = "ORBS TEE Framework SDK for AWS Nitro Enclaves"
 
 [dependencies]
+# ORBS TEE Protocol
+orbs-tee-protocol = { path = "../orbs-tee-protocol/rust" }
+
 # Async runtime - needed for async/await in Rust
 tokio = { version = "1.35", features = ["full"] }
 

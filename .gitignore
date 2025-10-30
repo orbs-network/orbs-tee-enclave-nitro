@@ -45,5 +45,3 @@ config
 # Nitro Enclave specific
 *.eif
 
-# Claude Code documentation
-CLAUDE.md

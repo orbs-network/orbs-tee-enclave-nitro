@@ -5,7 +5,7 @@ use crate::{
     EnclaveApp, AppError, Response,
     crypto::KeyManager,
     nitro::NitroAttestation,
-    protocol::{TeeRequest, TeeResponse},
+    TeeRequest, TeeResponse,
 };
 use std::sync::Arc;
 use tokio::sync::Mutex;

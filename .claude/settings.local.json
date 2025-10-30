@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(cargo:*)",
-      "Bash(rustc:*)"
+      "Bash(rustc:*)",
+      "Read(//Users/ami/orbs/orbs-tee-protocol/**)"
     ],
     "deny": [],
     "ask": []
