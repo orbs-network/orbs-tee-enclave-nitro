@@ -5,6 +5,7 @@ use aws_nitro_enclaves_nsm_api::{
     api::{Request, Response},
     driver::{nsm_init, nsm_process_request},
 };
+use serde_bytes::ByteBuf;
 
 /// Errors that can occur during attestation
 #[derive(Debug, thiserror::Error)]
@@ -64,15 +65,16 @@ impl NitroAttestation {
         nonce: Option<Vec<u8>>,
     ) -> Result<Vec<u8>, NitroError> {
         // Create attestation request for NSM
+        // Note: NSM API expects ByteBuf (from serde_bytes) instead of Vec<u8>
         let request = Request::Attestation {
             // Public key to include in attestation (proves this key belongs to this enclave)
-            public_key: Some(public_key),
-            
+            public_key: Some(ByteBuf::from(public_key)),
+
             // Optional user data (custom application data)
-            user_data,
-            
+            user_data: user_data.map(ByteBuf::from),
+
             // Optional nonce (prevents replay attacks)
-            nonce,
+            nonce: nonce.map(ByteBuf::from),
         };
         
         // Send request to NSM device and get response

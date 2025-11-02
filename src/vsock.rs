@@ -56,7 +56,8 @@ impl VsockServer {
         tokio::task::spawn_blocking(move || {
             // Create vsocket listener
             // VMADDR_CID_ANY means accept connections from any Context ID (host or other VMs)
-            let listener = VsockListener::bind(VMADDR_CID_ANY, port)?;
+            let addr = VsockAddr::new(VMADDR_CID_ANY, port);
+            let listener = VsockListener::bind(&addr)?;
 
             println!("✅ Vsock server listening on port {}", port);
 

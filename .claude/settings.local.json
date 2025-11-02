@@ -6,7 +6,13 @@
       "Bash(find:*)",
       "Bash(cat:*)",
       "Bash(git checkout:*)",
-      "Bash(rustup:*)"
+      "Bash(rustup:*)",
+      "Bash(for:*)",
+      "Bash(do docker info)",
+      "Bash(break)",
+      "Bash(echo:*)",
+      "Bash(done)",
+      "Read(//private/tmp/**)"
     ],
     "deny": [],
     "ask": []
