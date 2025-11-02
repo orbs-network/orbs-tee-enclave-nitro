@@ -90,7 +90,7 @@ impl VsockServer {
             Ok::<(), io::Error>(())
         })
         .await
-        .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?
+        .map_err(io::Error::other)?
     }
 }
 
@@ -112,7 +112,7 @@ where
         (stream, result)
     })
     .await
-    .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
+    .map_err(io::Error::other)?;
 
     let (mut stream, request) = request;
     let request = request?;
@@ -127,7 +127,7 @@ where
     // Write the response message (blocking I/O wrapped in spawn_blocking)
     tokio::task::spawn_blocking(move || write_message(&mut stream, &response))
         .await
-        .map_err(|e| io::Error::new(io::ErrorKind::Other, e))??;
+        .map_err(io::Error::other)??;
 
     // Connection automatically closed when stream is dropped
     Ok(())

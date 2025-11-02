@@ -34,7 +34,7 @@ impl NitroAttestation {
     pub fn new() -> Result<Self, NitroError> {
         // nsm_init() opens /dev/nsm device and returns file descriptor
         // Returns -1 on error (C convention)
-        let nsm_fd = unsafe { nsm_init() };
+        let nsm_fd = nsm_init();
 
         if nsm_fd < 0 {
             return Err(NitroError::InitFailed);
@@ -79,7 +79,7 @@ impl NitroAttestation {
 
         // Send request to NSM device and get response
         // This is a synchronous call to the NSM hardware
-        let response = unsafe { nsm_process_request(self.nsm_fd, request) };
+        let response = nsm_process_request(self.nsm_fd, request);
 
         // Parse the response
         match response {
