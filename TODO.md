@@ -96,14 +96,18 @@ This SDK is part of a larger ORBS TEE system with 5 components:
 
 ## Medium Priority
 
-### 4. ⏳ Update README with test instructions
-**Status:** Pending
+### 4. ✅ Update README with test instructions
+**Status:** Complete
 **Description:** Document testing in README
 **Tasks:**
-- [ ] Add "Running Tests" section
-- [ ] Document test structure (unit vs integration)
-- [ ] Add cross-platform testing notes
-- [ ] Document feature flags for testing
+- [x] Add "Running Tests" section
+- [x] Document test structure (unit vs integration)
+- [x] Add cross-platform testing notes
+- [x] Document feature flags for testing
+- [x] Add Docker testing commands
+- [x] Add CI/CD information
+- [x] Update requirements section with MSRV
+- [x] Remove Windows support (Ubuntu + macOS only)
 
 ### 5. ✅ Add GitHub Actions CI/CD
 **Status:** Complete
