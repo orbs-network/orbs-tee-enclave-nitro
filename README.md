@@ -210,15 +210,14 @@ impl EnclaveApp for PriceOracle {
 
 ## Building and Testing
 
+### Build Commands
+
 ```bash
 # Build the library
 cargo build
 
 # Build with optimizations
 cargo build --release
-
-# Run tests
-cargo test
 
 # Build the price oracle example
 cargo build --manifest-path examples/price-oracle/Cargo.toml
@@ -232,6 +231,97 @@ cargo fmt
 # Lint
 cargo clippy
 ```
+
+### Running Tests
+
+The SDK includes comprehensive test coverage with 16 tests across cryptography and runtime components.
+
+#### Cross-Platform Testing
+
+**macOS/Windows:**
+```bash
+# Run all tests (without nitro features)
+cargo test --no-default-features
+
+# Run tests with verbose output
+cargo test --no-default-features -- --nocapture
+```
+
+**Linux Only:**
+```bash
+# Run all tests (including nitro features)
+cargo test
+
+# Run specific test suites
+cargo test --test crypto_tests
+cargo test --test runtime_tests
+```
+
+**Why the difference?** The `nitro` feature includes Linux-only dependencies (vsock, NSM) that don't compile on macOS/Windows. Tests are designed to run without these features for cross-platform development, while full nitro tests run on Linux via CI or Docker.
+
+#### Test Structure
+
+The test suite is organized into:
+
+- **Unit Tests** (`tests/crypto_tests.rs` - 10 tests)
+  - Key generation and uniqueness
+  - Signature creation and verification
+  - Public key serialization
+  - JSON signing and verification
+
+- **Integration Tests** (`tests/runtime_tests.rs` - 6 tests)
+  - EnclaveRuntime initialization
+  - Request handling and routing
+  - Response signing
+  - Error handling
+
+#### Feature Flags
+
+The SDK uses Cargo features for platform-specific code:
+
+```toml
+[features]
+default = ["nitro"]
+nitro = ["aws-nitro-enclaves-nsm-api", "vsock"]
+```
+
+- **With nitro** (default on Linux): Full functionality including vsocket and NSM attestation
+- **Without nitro** (`--no-default-features`): Core crypto and runtime features for cross-platform testing
+
+#### Docker Testing (Linux Environment)
+
+For testing nitro features on macOS/Windows, use Docker:
+
+```bash
+# Run cross-platform tests in Docker
+make docker-test
+
+# Test with nitro features enabled
+make docker-test-nitro
+
+# Check that nitro features compile
+make docker-check
+
+# Run all checks (test, clippy, fmt)
+make docker-all
+
+# Open shell in container for debugging
+make docker-shell
+```
+
+Docker provides a Linux environment where the vsock crate compiles correctly.
+
+#### Continuous Integration
+
+The project uses GitHub Actions for automated testing on every push and pull request:
+
+- ✅ **Tests** on Ubuntu, macOS, and Windows
+- ✅ **Clippy lints** (with and without nitro features)
+- ✅ **Format check** (cargo fmt)
+- ✅ **MSRV check** (Minimum Supported Rust Version: 1.83)
+- ✅ **Example compilation** (price-oracle on Linux)
+
+View CI status: [GitHub Actions](https://github.com/orbs-network/orbs-tee-enclave-nitro/actions)
 
 ## How It Works
 
@@ -315,8 +405,10 @@ pub async fn run_enclave_app<T: EnclaveApp + 'static>(
 
 ## Requirements
 
-- Rust 1.74 or later
-- AWS Nitro Enclave environment (for production)
+- **Rust 1.83 or later** (MSRV - Minimum Supported Rust Version)
+- **Linux** for nitro features (vsocket, NSM attestation)
+- **macOS/Windows** supported for development (without nitro features)
+- AWS Nitro Enclave environment (for production deployment)
 - Tokio async runtime
 
 ## License
