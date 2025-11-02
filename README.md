@@ -238,7 +238,7 @@ The SDK includes comprehensive test coverage with 16 tests across cryptography a
 
 #### Cross-Platform Testing
 
-**macOS/Windows:**
+**macOS:**
 ```bash
 # Run all tests (without nitro features)
 cargo test --no-default-features
@@ -247,7 +247,7 @@ cargo test --no-default-features
 cargo test --no-default-features -- --nocapture
 ```
 
-**Linux Only:**
+**Linux:**
 ```bash
 # Run all tests (including nitro features)
 cargo test
@@ -257,7 +257,7 @@ cargo test --test crypto_tests
 cargo test --test runtime_tests
 ```
 
-**Why the difference?** The `nitro` feature includes Linux-only dependencies (vsock, NSM) that don't compile on macOS/Windows. Tests are designed to run without these features for cross-platform development, while full nitro tests run on Linux via CI or Docker.
+**Why the difference?** The `nitro` feature includes Linux-only dependencies (vsock, NSM) that don't compile on macOS. Tests are designed to run without these features for macOS development, while full nitro tests run on Linux via CI or Docker.
 
 #### Test Structure
 
@@ -290,7 +290,7 @@ nitro = ["aws-nitro-enclaves-nsm-api", "vsock"]
 
 #### Docker Testing (Linux Environment)
 
-For testing nitro features on macOS/Windows, use Docker:
+For testing nitro features on macOS, use Docker:
 
 ```bash
 # Run cross-platform tests in Docker
@@ -315,7 +315,7 @@ Docker provides a Linux environment where the vsock crate compiles correctly.
 
 The project uses GitHub Actions for automated testing on every push and pull request:
 
-- ✅ **Tests** on Ubuntu, macOS, and Windows
+- ✅ **Tests** on Ubuntu and macOS
 - ✅ **Clippy lints** (with and without nitro features)
 - ✅ **Format check** (cargo fmt)
 - ✅ **MSRV check** (Minimum Supported Rust Version: 1.83)
@@ -407,7 +407,7 @@ pub async fn run_enclave_app<T: EnclaveApp + 'static>(
 
 - **Rust 1.83 or later** (MSRV - Minimum Supported Rust Version)
 - **Linux** for nitro features (vsocket, NSM attestation)
-- **macOS/Windows** supported for development (without nitro features)
+- **macOS** supported for development (without nitro features)
 - AWS Nitro Enclave environment (for production deployment)
 - Tokio async runtime
 
