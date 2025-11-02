@@ -10,31 +10,43 @@ This is the **ORBS TEE Nitro SDK** - a Rust framework for building AWS Nitro Enc
 
 ## Build and Test Commands
 
+### Development (macOS/Linux without Nitro)
 ```bash
-# Build the library
-cargo build
+# Build the library (without nitro features)
+cargo build --no-default-features
 
-# Build with release optimizations
-cargo build --release
+# Run all tests (cross-platform, 16 tests)
+cargo test --no-default-features
 
-# Run tests
-cargo test
-
-# Build the price-oracle example
-cargo build --manifest-path examples/price-oracle/Cargo.toml
-
-# Build price-oracle with release optimizations
-cargo build --release --manifest-path examples/price-oracle/Cargo.toml
+# Run specific test file
+cargo test --no-default-features --test crypto_tests
+cargo test --no-default-features --test runtime_tests
 
 # Check code without building
-cargo check
+cargo check --no-default-features
 
 # Format code
 cargo fmt
 
 # Run clippy linter
-cargo clippy
+cargo clippy --no-default-features
 ```
+
+### Production (AWS Nitro Enclaves on Linux)
+```bash
+# Build with nitro features (requires Linux)
+cargo build --release
+
+# Run all tests with nitro features
+cargo test
+
+# Build the price-oracle example (requires Linux)
+cargo build --release --manifest-path examples/price-oracle/Cargo.toml
+```
+
+### Minimum Supported Rust Version (MSRV)
+- **Rust 1.83+** required (due to dependencies like reqwest, icu_collections)
+- Update Rust: `rustup update stable`
 
 ## Architecture
 
@@ -70,9 +82,12 @@ The SDK is structured around several key modules that work together:
    - Uses vsocket (VM-to-host communication protocol)
    - Messages use length-prefixed wire format: `[4 bytes: length][N bytes: data]`
 
-6. **Protocol** (`src/protocol.rs`) - Request/response data structures
+6. **Protocol** (from `orbs-tee-protocol` crate) - Request/response data structures
+   - Published on crates.io as `orbs-tee-protocol = "0.1.4"`
+   - Shared between Rust (enclave) and TypeScript (host) implementations
    - `TeeRequest`: Contains id, method, params, timestamp
    - `TeeResponse`: Contains id, success, data, signature, error
+   - Re-exported from crate root: `pub use orbs_tee_protocol::{TeeRequest, TeeResponse}`
 
 ### Request Flow
 
@@ -109,6 +124,84 @@ See `examples/price-oracle/` for a complete working example:
 
 The example demonstrates the SDK's core value proposition: developers write minimal code while getting full TEE functionality.
 
+## Test Structure
+
+### Directory Layout
+```
+orbs-tee-enclave-nitro/
+├── src/
+│   ├── lib.rs          # Public API, EnclaveApp trait
+│   ├── app.rs          # EnclaveRuntime implementation (165 lines)
+│   ├── crypto.rs       # KeyManager with ECDSA signing
+│   ├── nitro.rs        # NitroAttestation (Linux-only)
+│   └── vsock.rs        # VsockServer (Linux-only)
+├── tests/
+│   ├── crypto_tests.rs    # 10 integration tests for crypto module
+│   └── runtime_tests.rs   # 6 integration tests for EnclaveApp/runtime
+├── examples/
+│   └── price-oracle/      # Complete example application
+└── TODO.md                # Development task tracking
+```
+
+### Test Coverage (16 tests total)
+
+**Crypto Tests** (`tests/crypto_tests.rs` - 10 tests)
+- Key generation and validation
+- Public key format (bytes and hex)
+- Data signing and JSON signing
+- Signature verification with secp256k1
+- Deterministic signing behavior
+- Different data produces different signatures
+- Key manager cloning
+- Unique keys per instance
+
+**Runtime Tests** (`tests/runtime_tests.rs` - 6 tests)
+- Application initialization lifecycle
+- Request handling (echo, signed echo)
+- Error handling (internal errors, invalid methods)
+- Error message formatting
+- EnclaveApp trait implementation
+
+### Running Tests
+
+```bash
+# Run all tests (cross-platform)
+cargo test --no-default-features
+
+# Run with verbose output
+cargo test --no-default-features -- --nocapture
+
+# Run specific test
+cargo test --no-default-features test_signature_verification
+
+# Run tests in specific file
+cargo test --no-default-features --test crypto_tests
+```
+
+### Cross-Platform Testing
+
+**macOS/Windows (Development)**
+- ✅ All 16 tests pass with `--no-default-features`
+- ✅ Tests crypto module thoroughly
+- ✅ Tests runtime request/response handling
+- ❌ Cannot test nitro/vsock (Linux-only)
+
+**Linux (Production)**
+- ✅ All tests including nitro features
+- ✅ vsock and NSM device available
+- ✅ Full integration testing possible
+
+### Feature Flags
+
+```toml
+[features]
+default = ["nitro"]
+nitro = ["aws-nitro-enclaves-nsm-api", "vsock"]
+```
+
+- **Default**: Includes nitro features (for AWS Nitro Enclaves on Linux)
+- **No defaults**: Cross-platform development and testing
+
 ## Development Notes
 
 ### Working with Nitro-Specific Code
@@ -119,9 +212,22 @@ The example demonstrates the SDK's core value proposition: developers write mini
 
 ### Testing Considerations
 
-- Nitro-specific code (NSM device) only works inside actual AWS Nitro Enclaves
-- For local development, mock the `NitroAttestation` interface
-- vsocket functionality requires VM environment or mocking
+**Platform Support:**
+- ✅ **Cross-platform tests**: Run on macOS/Windows/Linux with `--no-default-features`
+- ✅ **16 integration tests** covering crypto and runtime
+- ⚠️ **Nitro-specific code** (NSM device) only works inside AWS Nitro Enclaves on Linux
+- ⚠️ **vsocket** requires Linux environment
+
+**Test Organization:**
+- Unit tests removed from `src/*.rs` files
+- All tests moved to `tests/` directory as integration tests
+- Integration tests compile as separate crates, testing public API
+- Better separation and organization
+
+**Conditional Compilation:**
+- Use `#[cfg(feature = "nitro")]` for platform-specific code
+- Runtime has two `new()` implementations: one with nitro, one without
+- Tests use the no-feature version for cross-platform compatibility
 
 ### Cryptographic Guarantees
 
@@ -132,9 +238,24 @@ The example demonstrates the SDK's core value proposition: developers write mini
 
 ## Dependencies
 
-Key external crates:
-- `aws-nitro-enclaves-nsm-api`: Low-level NSM device communication
-- `secp256k1`: ECDSA signing and key generation
-- `tokio`: Async runtime
-- `serde`/`serde_json`: Serialization
-- `vsock`: vsocket communication protocol
+**Core Dependencies (always included):**
+- `orbs-tee-protocol = "0.1.4"`: Shared protocol types (TeeRequest/TeeResponse)
+- `secp256k1`: ECDSA signing and key generation (secp256k1 curve)
+- `sha2`: SHA-256 hashing for signatures
+- `tokio`: Async runtime for non-blocking I/O
+- `serde`/`serde_json`: JSON serialization/deserialization
+- `async-trait`: Async methods in traits
+- `thiserror`: Better error types
+- `hex`: Hex encoding/decoding
+- `rand`: Cryptographically secure random number generation
+- `chrono`: Date/time handling
+
+**Optional Dependencies (nitro feature):**
+- `aws-nitro-enclaves-nsm-api`: Low-level NSM device communication (Linux-only)
+- `vsock`: vsocket communication protocol (Linux-only)
+- `libc`: For closing file descriptors
+
+**Development Strategy:**
+- Using local path for examples: `orbs-tee-nitro = { path = "../../" }`
+- Will publish to crates.io after completing quality checklist (see TODO.md)
+- Following semantic versioning (0.1.0 for first release)
