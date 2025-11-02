@@ -1,7 +1,10 @@
 // This is the main runtime that orchestrates everything
 // It brings together: key management, Nitro attestation, vsocket server, and user's app
 
-use crate::{crypto::KeyManager, EnclaveApp, Response, TeeRequest, TeeResponse};
+use crate::{crypto::KeyManager, EnclaveApp};
+
+#[cfg(feature = "nitro")]
+use crate::{Response, TeeRequest, TeeResponse};
 
 #[cfg(feature = "nitro")]
 use crate::AppError;
@@ -99,6 +102,7 @@ impl<T: EnclaveApp + 'static> EnclaveRuntime<T> {
     }
 
     /// Handle a single request from the host
+    #[cfg(feature = "nitro")]
     async fn handle_request(&self, request_bytes: Vec<u8>) -> Vec<u8> {
         // Deserialize the request
         let request: TeeRequest = match serde_json::from_slice(&request_bytes) {

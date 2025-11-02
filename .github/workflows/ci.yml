@@ -108,7 +108,7 @@ jobs:
         toolchain: stable
 
     - name: Check price-oracle example compiles
-      run: cargo check --example price-oracle --verbose
+      run: cargo check --verbose
       working-directory: examples/price-oracle
 
   # Check minimum supported Rust version
