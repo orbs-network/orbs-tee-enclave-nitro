@@ -86,15 +86,34 @@
 - [ ] Add verification benchmarks
 
 ### 9. ⏳ Prepare for crates.io publication
-**Status:** Pending
-**Description:** Package metadata and documentation
-**Tasks:**
-- [ ] Add LICENSE file
-- [ ] Update Cargo.toml metadata (keywords, categories)
-- [ ] Add repository and documentation links
-- [ ] Write CHANGELOG.md
-- [ ] Verify all docs are complete
+**Status:** Pending (Keep local until ready)
+**Description:** Package metadata and documentation for public release
+
+**Pre-Publish Checklist:**
+- [ ] All TODO tasks #2-#8 completed
+- [ ] All modules verified complete (nitro, vsock, app, crypto)
+- [ ] Documentation complete (README, CLAUDE.md, inline docs)
+- [ ] CI/CD passing on GitHub Actions
+- [ ] All tests passing (unit + integration)
+- [ ] Examples working and documented
+- [ ] Add LICENSE file (MIT)
+- [ ] Update Cargo.toml metadata:
+  - [ ] keywords = ["tee", "enclave", "nitro", "aws", "attestation"]
+  - [ ] categories = ["cryptography", "network-programming"]
+  - [ ] repository URL
+  - [ ] documentation URL
+  - [ ] homepage URL
+- [ ] Write CHANGELOG.md with 0.1.0 release notes
 - [ ] Test `cargo publish --dry-run`
+- [ ] Final review of public API
+- [ ] Publish with `cargo publish`
+- [ ] Tag release: `git tag v0.1.0 && git push --tags`
+- [ ] Update example to use published version
+
+**Current Strategy:**
+- Using local path for development: `orbs-tee-nitro = { path = "../../" }`
+- Will publish to crates.io only when all quality checks pass
+- Following semantic versioning (0.1.0 for first release)
 
 ## Completed ✅
 
