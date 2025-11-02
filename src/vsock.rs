@@ -4,7 +4,7 @@
 use std::io::{self, Read, Write};
 
 // Re-export vsock types for convenience
-pub use vsock::{VsockListener, VsockStream, VsockAddr, VMADDR_CID_ANY};
+pub use vsock::{VsockAddr, VsockListener, VsockStream, VMADDR_CID_ANY};
 
 /// vsocket server that accepts connections from the host
 /// This is similar to a TCP server but uses vsocket instead
@@ -14,14 +14,14 @@ pub struct VsockServer {
 
 impl VsockServer {
     /// Create a new vsocket server on the specified port
-    /// 
+    ///
     /// Common ports:
     /// - 5000: Default for ORBS TEE framework
     /// - The host will connect to "CID 16" (enclave) on this port
     pub fn new(port: u32) -> Self {
         Self { port }
     }
-    
+
     /// Start listening for connections
     /// This is an async function that runs forever, accepting connections
     ///
@@ -35,10 +35,7 @@ impl VsockServer {
     /// Note: This uses blocking I/O from the vsock crate (v0.3) which provides
     /// std::io::Read/Write, not tokio's AsyncRead/AsyncWrite. The accept() loop
     /// runs in a blocking context, but handlers are spawned as async tasks.
-    pub async fn listen<F, Fut>(
-        &self,
-        handler: F,
-    ) -> Result<(), io::Error>
+    pub async fn listen<F, Fut>(&self, handler: F) -> Result<(), io::Error>
     where
         // F is a function that takes a request and returns a response
         // Fut is the Future returned by that function (async result)
@@ -104,10 +101,7 @@ impl VsockServer {
 /// 4. Close connection (automatic when stream is dropped)
 ///
 /// This function wraps blocking I/O operations in spawn_blocking to work with tokio
-async fn handle_connection<F, Fut>(
-    mut stream: VsockStream,
-    handler: F,
-) -> Result<(), io::Error>
+async fn handle_connection<F, Fut>(mut stream: VsockStream, handler: F) -> Result<(), io::Error>
 where
     F: Fn(Vec<u8>) -> Fut,
     Fut: std::future::Future<Output = Vec<u8>>,

@@ -3,9 +3,9 @@
 
 // Re-export everything from submodules
 pub mod app;
-#[cfg(feature = "nitro")]
-pub mod nitro;      // Nitro-specific attestation
 pub mod crypto;
+#[cfg(feature = "nitro")]
+pub mod nitro; // Nitro-specific attestation
 #[cfg(feature = "nitro")]
 pub mod vsock;
 
@@ -21,10 +21,10 @@ use app::EnclaveRuntime;
 pub enum AppError {
     #[error("Invalid request: {0}")]
     InvalidRequest(String),
-    
+
     #[error("Internal error: {0}")]
     InternalError(String),
-    
+
     #[error("Network error: {0}")]
     NetworkError(String),
 }

@@ -3,9 +3,9 @@
 // - Data signing with ECDSA
 // - Key serialization
 
-use secp256k1::{Secp256k1, SecretKey, PublicKey, Message};
-use sha2::{Sha256, Digest};
 use rand::rngs::OsRng;
+use secp256k1::{Message, PublicKey, Secp256k1, SecretKey};
+use sha2::{Digest, Sha256};
 use std::collections::BTreeMap;
 
 /// Canonicalize JSON for deterministic serialization
@@ -48,10 +48,10 @@ fn canonicalize_json(value: &serde_json::Value) -> Result<Vec<u8>, Box<dyn std::
 pub struct KeyManager {
     /// Private key (NEVER leaves the enclave)
     private_key: SecretKey,
-    
+
     /// Public key (shared with outside world)
     public_key: PublicKey,
-    
+
     /// Secp256k1 context (reused for efficiency)
     secp: Secp256k1<secp256k1::All>,
 }
@@ -62,38 +62,38 @@ impl KeyManager {
     pub fn new() -> Result<Self, Box<dyn std::error::Error>> {
         // Create secp256k1 context (used for all crypto operations)
         let secp = Secp256k1::new();
-        
+
         // Generate random private key using OS random number generator
         // OsRng is cryptographically secure (uses /dev/urandom on Linux)
         let mut rng = OsRng;
         let private_key = SecretKey::new(&mut rng);
-        
+
         // Derive public key from private key
         // This is one-way: private -> public is easy, public -> private is impossible
         let public_key = PublicKey::from_secret_key(&secp, &private_key);
-        
+
         Ok(Self {
             private_key,
             public_key,
             secp,
         })
     }
-    
+
     /// Get the public key as bytes (33 bytes compressed format)
     /// Format: 0x02/0x03 (1 byte) + X coordinate (32 bytes)
     pub fn public_key_bytes(&self) -> Vec<u8> {
         self.public_key.serialize().to_vec()
     }
-    
+
     /// Get the public key as hex string with 0x prefix
     /// Example: "0x0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798"
     pub fn public_key_hex(&self) -> String {
         format!("0x{}", hex::encode(self.public_key_bytes()))
     }
-    
+
     /// Sign arbitrary data with ECDSA
     /// Returns 64-byte signature (r, s components, 32 bytes each)
-    /// 
+    ///
     /// Process:
     /// 1. Hash the data with SHA-256 (32 bytes)
     /// 2. Sign the hash with ECDSA
@@ -103,17 +103,17 @@ impl KeyManager {
         let mut hasher = Sha256::new();
         hasher.update(data);
         let hash = hasher.finalize();
-        
+
         // Convert hash to secp256k1 Message type
         let message = Message::from_digest_slice(&hash)?;
-        
+
         // Sign the message with our private key
         let signature = self.secp.sign_ecdsa(&message, &self.private_key);
-        
+
         // Return signature in compact format (64 bytes: 32 bytes r + 32 bytes s)
         Ok(signature.serialize_compact().to_vec())
     }
-    
+
     /// Sign JSON data with canonical serialization
     ///
     /// IMPORTANT: This uses canonical JSON serialization to ensure consistent signatures.
@@ -122,7 +122,10 @@ impl KeyManager {
     ///
     /// For signature verification on the host side, you MUST use the same canonical
     /// serialization format (sorted keys, compact).
-    pub fn sign_json(&self, data: &serde_json::Value) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    pub fn sign_json(
+        &self,
+        data: &serde_json::Value,
+    ) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
         // Serialize JSON to canonical format (sorted keys, compact)
         // This ensures deterministic serialization for consistent signatures
         let canonical_json = canonicalize_json(data)?;
@@ -143,4 +146,3 @@ impl Clone for KeyManager {
         }
     }
 }
-

@@ -1,7 +1,7 @@
 // Integration tests for EnclaveRuntime
 
-use orbs_tee_nitro::{EnclaveApp, AppError, Response};
 use async_trait::async_trait;
+use orbs_tee_nitro::{AppError, EnclaveApp, Response};
 use serde_json::json;
 
 // Test application implementation
@@ -37,7 +37,10 @@ impl EnclaveApp for TestApp {
                 sign: true,
             }),
             "error" => Err(AppError::InternalError("Test error".to_string())),
-            _ => Err(AppError::InvalidRequest(format!("Unknown method: {}", method))),
+            _ => Err(AppError::InvalidRequest(format!(
+                "Unknown method: {}",
+                method
+            ))),
         }
     }
 }
@@ -54,10 +57,9 @@ async fn test_app_initialization() {
 #[tokio::test]
 async fn test_echo_request() {
     let app = TestApp::new();
-    let response = app.handle_request(
-        "echo",
-        json!({"message": "hello"}),
-    ).await;
+    let response = app
+        .handle_request("echo", json!({"message": "hello"}))
+        .await;
 
     assert!(response.is_ok());
     let resp = response.unwrap();
@@ -68,10 +70,9 @@ async fn test_echo_request() {
 #[tokio::test]
 async fn test_signed_echo_request() {
     let app = TestApp::new();
-    let response = app.handle_request(
-        "sign_echo",
-        json!({"data": "sign me"}),
-    ).await;
+    let response = app
+        .handle_request("sign_echo", json!({"data": "sign me"}))
+        .await;
 
     assert!(response.is_ok());
     let resp = response.unwrap();
@@ -119,6 +120,9 @@ async fn test_app_error_display() {
 
     for error in errors {
         let error_string = error.to_string();
-        assert!(error_string.contains("test"), "Error should display message");
+        assert!(
+            error_string.contains("test"),
+            "Error should display message"
+        );
     }
 }

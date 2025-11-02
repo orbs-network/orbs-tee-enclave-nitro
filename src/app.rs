@@ -1,11 +1,7 @@
 // This is the main runtime that orchestrates everything
 // It brings together: key management, Nitro attestation, vsocket server, and user's app
 
-use crate::{
-    EnclaveApp, Response,
-    crypto::KeyManager,
-    TeeRequest, TeeResponse,
-};
+use crate::{crypto::KeyManager, EnclaveApp, Response, TeeRequest, TeeResponse};
 
 #[cfg(feature = "nitro")]
 use crate::AppError;
@@ -92,12 +88,12 @@ impl<T: EnclaveApp + 'static> EnclaveRuntime<T> {
 
         let runtime = Arc::new(self);
 
-        server.listen(move |request_bytes| {
-            let runtime = runtime.clone();
-            async move {
-                runtime.handle_request(request_bytes).await
-            }
-        }).await?;
+        server
+            .listen(move |request_bytes| {
+                let runtime = runtime.clone();
+                async move { runtime.handle_request(request_bytes).await }
+            })
+            .await?;
 
         Ok(())
     }
@@ -121,7 +117,8 @@ impl<T: EnclaveApp + 'static> EnclaveRuntime<T> {
         // Route to application handler
         let app_response = {
             let app = self.app.lock().await;
-            app.handle_request(&request.method, request.params.clone()).await
+            app.handle_request(&request.method, request.params.clone())
+                .await
         };
 
         // Build response
@@ -176,6 +173,8 @@ impl<T: EnclaveApp + 'static> EnclaveRuntime<T> {
         nonce: Option<Vec<u8>>,
     ) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
         let public_key = self.key_manager.public_key_bytes();
-        Ok(self.nitro.generate_attestation(public_key, user_data, nonce)?)
+        Ok(self
+            .nitro
+            .generate_attestation(public_key, user_data, nonce)?)
     }
 }

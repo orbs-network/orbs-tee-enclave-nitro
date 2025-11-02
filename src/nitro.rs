@@ -12,10 +12,10 @@ use serde_bytes::ByteBuf;
 pub enum NitroError {
     #[error("Failed to initialize NSM device")]
     InitFailed,
-    
+
     #[error("Failed to generate attestation: {0}")]
     GenerationFailed(String),
-    
+
     #[error("Unexpected response from NSM")]
     UnexpectedResponse,
 }
@@ -35,23 +35,23 @@ impl NitroAttestation {
         // nsm_init() opens /dev/nsm device and returns file descriptor
         // Returns -1 on error (C convention)
         let nsm_fd = unsafe { nsm_init() };
-        
+
         if nsm_fd < 0 {
             return Err(NitroError::InitFailed);
         }
-        
+
         Ok(Self { nsm_fd })
     }
-    
+
     /// Generate an attestation document
-    /// 
+    ///
     /// Parameters:
     /// - public_key: Enclave's public key to embed in attestation
     /// - user_data: Optional custom data (e.g., nonce, app-specific info)
     /// - nonce: Optional nonce for freshness
-    /// 
+    ///
     /// Returns: Raw attestation document (CBOR encoded)
-    /// 
+    ///
     /// The attestation document contains:
     /// - PCRs (Platform Configuration Registers) - hashes of enclave code
     /// - Public key embedded in the document
@@ -76,23 +76,19 @@ impl NitroAttestation {
             // Optional nonce (prevents replay attacks)
             nonce: nonce.map(ByteBuf::from),
         };
-        
+
         // Send request to NSM device and get response
         // This is a synchronous call to the NSM hardware
-        let response = unsafe {
-            nsm_process_request(self.nsm_fd, request)
-        };
-        
+        let response = unsafe { nsm_process_request(self.nsm_fd, request) };
+
         // Parse the response
         match response {
             // Success - return the attestation document
             Response::Attestation { document } => Ok(document),
-            
+
             // Error from NSM
-            Response::Error(err) => {
-                Err(NitroError::GenerationFailed(format!("{:?}", err)))
-            }
-            
+            Response::Error(err) => Err(NitroError::GenerationFailed(format!("{:?}", err))),
+
             // Unexpected response type
             _ => Err(NitroError::UnexpectedResponse),
         }

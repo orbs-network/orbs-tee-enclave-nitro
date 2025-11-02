@@ -1,9 +1,9 @@
 // Integration tests for crypto module
 
 use orbs_tee_nitro::crypto::KeyManager;
+use secp256k1::{Message, Secp256k1};
 use serde_json::json;
-use secp256k1::{Secp256k1, Message};
-use sha2::{Sha256, Digest};
+use sha2::{Digest, Sha256};
 
 #[test]
 fn test_key_generation() {
@@ -18,7 +18,11 @@ fn test_public_key_bytes_format() {
     let public_key_bytes = key_manager.public_key_bytes();
 
     // Compressed public key should be exactly 33 bytes
-    assert_eq!(public_key_bytes.len(), 33, "Compressed public key should be 33 bytes");
+    assert_eq!(
+        public_key_bytes.len(),
+        33,
+        "Compressed public key should be 33 bytes"
+    );
 
     // First byte should be 0x02 or 0x03 (compressed format prefix)
     assert!(
@@ -33,14 +37,24 @@ fn test_public_key_hex_format() {
     let public_key_hex = key_manager.public_key_hex();
 
     // Should start with "0x"
-    assert!(public_key_hex.starts_with("0x"), "Public key hex should start with 0x");
+    assert!(
+        public_key_hex.starts_with("0x"),
+        "Public key hex should start with 0x"
+    );
 
     // Should be 68 characters total (0x + 66 hex chars for 33 bytes)
-    assert_eq!(public_key_hex.len(), 68, "Public key hex should be 68 characters");
+    assert_eq!(
+        public_key_hex.len(),
+        68,
+        "Public key hex should be 68 characters"
+    );
 
     // Should be valid hex after the 0x prefix
     let hex_part = &public_key_hex[2..];
-    assert!(hex_part.chars().all(|c| c.is_ascii_hexdigit()), "Should be valid hex");
+    assert!(
+        hex_part.chars().all(|c| c.is_ascii_hexdigit()),
+        "Should be valid hex"
+    );
 }
 
 #[test]
@@ -124,7 +138,10 @@ fn test_different_data_different_signatures() {
     let sig2 = key_manager.sign(data2).unwrap();
 
     // Different data should produce different signatures
-    assert_ne!(sig1, sig2, "Different data should have different signatures");
+    assert_ne!(
+        sig1, sig2,
+        "Different data should have different signatures"
+    );
 }
 
 #[test]
@@ -145,7 +162,10 @@ fn test_clone() {
     let sig2 = cloned.sign(data).unwrap();
 
     // Both should produce the same signature
-    assert_eq!(sig1, sig2, "Cloned key manager should produce same signatures");
+    assert_eq!(
+        sig1, sig2,
+        "Cloned key manager should produce same signatures"
+    );
 }
 
 #[test]
@@ -191,8 +211,14 @@ fn test_json_canonicalization() {
     let sig2 = key_manager.sign_json(&json2).unwrap();
     let sig3 = key_manager.sign_json(&json3).unwrap();
 
-    assert_eq!(sig1, sig2, "Signatures should be identical regardless of key order");
-    assert_eq!(sig2, sig3, "Signatures should be identical regardless of key order");
+    assert_eq!(
+        sig1, sig2,
+        "Signatures should be identical regardless of key order"
+    );
+    assert_eq!(
+        sig2, sig3,
+        "Signatures should be identical regardless of key order"
+    );
 }
 
 #[test]
@@ -221,5 +247,8 @@ fn test_nested_json_canonicalization() {
     let sig1 = key_manager.sign_json(&json1).unwrap();
     let sig2 = key_manager.sign_json(&json2).unwrap();
 
-    assert_eq!(sig1, sig2, "Nested JSON signatures should be identical regardless of key order");
+    assert_eq!(
+        sig1, sig2,
+        "Nested JSON signatures should be identical regardless of key order"
+    );
 }
