@@ -436,12 +436,9 @@ async fn test_concurrent_requests() {
     // Wait for all requests to complete
     let mut success_count = 0;
     for handle in handles {
-        match handle.await {
-            Ok(Ok(response)) => {
-                assert!(response.success);
-                success_count += 1;
-            }
-            _ => {}
+        if let Ok(Ok(response)) = handle.await {
+            assert!(response.success);
+            success_count += 1;
         }
     }
 
