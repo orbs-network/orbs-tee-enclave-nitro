@@ -7,9 +7,6 @@ use crate::{crypto::KeyManager, EnclaveApp};
 use crate::{Response, TeeRequest, TeeResponse};
 
 #[cfg(feature = "nitro")]
-use crate::AppError;
-
-#[cfg(feature = "nitro")]
 use crate::nitro::NitroAttestation;
 
 use std::sync::Arc;
