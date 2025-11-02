@@ -1,0 +1,37 @@
+# Rust build artifacts
+target/
+**/*.rs.bk
+*.pdb
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+.gitignore
+
+# Documentation (keep in context, but could exclude if image size matters)
+# README.md
+# CLAUDE.md
+# TODO.md
+
+# macOS
+.DS_Store
+
+# Environment files
+.env
+.env.*
+
+# AWS credentials
+*.pem
+*.key
+
+# Nitro enclave images
+*.eif
+
+# Cargo lock (include it for reproducible builds)
+# Cargo.lock

@@ -2,10 +2,13 @@
 // It brings together: key management, Nitro attestation, vsocket server, and user's app
 
 use crate::{
-    EnclaveApp, AppError, Response,
+    EnclaveApp, Response,
     crypto::KeyManager,
     TeeRequest, TeeResponse,
 };
+
+#[cfg(feature = "nitro")]
+use crate::AppError;
 
 #[cfg(feature = "nitro")]
 use crate::nitro::NitroAttestation;
@@ -145,7 +148,19 @@ impl<T: EnclaveApp + 'static> EnclaveRuntime<T> {
         println!("📤 Sending response for request {}", request.id);
 
         // Serialize and return
-        serde_json::to_vec(&response).unwrap_or_default()
+        // If serialization fails, return a minimal error response instead of empty bytes
+        match serde_json::to_vec(&response) {
+            Ok(bytes) => bytes,
+            Err(e) => {
+                eprintln!("❌ CRITICAL: Failed to serialize response: {}", e);
+                // Return a minimal error response that should always serialize
+                let error = TeeResponse::error(
+                    request.id.clone(),
+                    format!("Internal serialization error: {}", e),
+                );
+                serde_json::to_vec(&error).unwrap_or_default()
+            }
+        }
     }
 
     /// Get the enclave's public key

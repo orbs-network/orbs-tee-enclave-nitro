@@ -160,3 +160,66 @@ fn test_unique_keys_per_instance() {
         "Each instance should have unique keys"
     );
 }
+
+#[test]
+fn test_json_canonicalization() {
+    use serde_json::json;
+
+    let key_manager = KeyManager::new().unwrap();
+
+    // Create JSON with different key orderings - should produce identical signatures
+    let json1 = json!({
+        "z_last": "value3",
+        "a_first": "value1",
+        "m_middle": "value2"
+    });
+
+    let json2 = json!({
+        "a_first": "value1",
+        "m_middle": "value2",
+        "z_last": "value3"
+    });
+
+    let json3 = json!({
+        "m_middle": "value2",
+        "z_last": "value3",
+        "a_first": "value1"
+    });
+
+    // All three should produce the same signature despite different key ordering
+    let sig1 = key_manager.sign_json(&json1).unwrap();
+    let sig2 = key_manager.sign_json(&json2).unwrap();
+    let sig3 = key_manager.sign_json(&json3).unwrap();
+
+    assert_eq!(sig1, sig2, "Signatures should be identical regardless of key order");
+    assert_eq!(sig2, sig3, "Signatures should be identical regardless of key order");
+}
+
+#[test]
+fn test_nested_json_canonicalization() {
+    use serde_json::json;
+
+    let key_manager = KeyManager::new().unwrap();
+
+    // Test nested objects with different key orderings
+    let json1 = json!({
+        "outer_z": {
+            "inner_z": "value2",
+            "inner_a": "value1"
+        },
+        "outer_a": "value3"
+    });
+
+    let json2 = json!({
+        "outer_a": "value3",
+        "outer_z": {
+            "inner_a": "value1",
+            "inner_z": "value2"
+        }
+    });
+
+    let sig1 = key_manager.sign_json(&json1).unwrap();
+    let sig2 = key_manager.sign_json(&json2).unwrap();
+
+    assert_eq!(sig1, sig2, "Nested JSON signatures should be identical regardless of key order");
+}

@@ -6,6 +6,42 @@
 use secp256k1::{Secp256k1, SecretKey, PublicKey, Message};
 use sha2::{Sha256, Digest};
 use rand::rngs::OsRng;
+use std::collections::BTreeMap;
+
+/// Canonicalize JSON for deterministic serialization
+///
+/// This function recursively processes JSON values and ensures:
+/// 1. Object keys are sorted alphabetically (using BTreeMap)
+/// 2. No whitespace in the output
+/// 3. Consistent serialization across different inputs
+///
+/// This is critical for signature verification - the same logical JSON
+/// must always produce the same byte representation.
+fn canonicalize_json(value: &serde_json::Value) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    fn sort_value(value: &serde_json::Value) -> serde_json::Value {
+        match value {
+            serde_json::Value::Object(map) => {
+                // Convert to BTreeMap for sorted keys
+                let sorted: BTreeMap<String, serde_json::Value> = map
+                    .iter()
+                    .map(|(k, v)| (k.clone(), sort_value(v)))
+                    .collect();
+                serde_json::to_value(sorted).unwrap()
+            }
+            serde_json::Value::Array(arr) => {
+                // Recursively sort array elements
+                serde_json::Value::Array(arr.iter().map(sort_value).collect())
+            }
+            _ => value.clone(),
+        }
+    }
+
+    // Sort the JSON structure
+    let sorted = sort_value(value);
+
+    // Serialize to compact JSON (no whitespace)
+    Ok(serde_json::to_vec(&sorted)?)
+}
 
 /// Manages cryptographic keys for the enclave
 /// Each enclave instance has ONE key pair that persists while enclave is running
@@ -78,24 +114,31 @@ impl KeyManager {
         Ok(signature.serialize_compact().to_vec())
     }
     
-    /// Sign JSON data
-    /// Convenience method that serializes JSON to bytes, then signs
+    /// Sign JSON data with canonical serialization
+    ///
+    /// IMPORTANT: This uses canonical JSON serialization to ensure consistent signatures.
+    /// The JSON is serialized with sorted keys and no whitespace, ensuring that the same
+    /// logical JSON object always produces the same signature.
+    ///
+    /// For signature verification on the host side, you MUST use the same canonical
+    /// serialization format (sorted keys, compact).
     pub fn sign_json(&self, data: &serde_json::Value) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
-        // Serialize JSON to bytes (deterministic ordering)
-        let bytes = serde_json::to_vec(data)?;
-        
-        // Sign the bytes
-        self.sign(&bytes)
+        // Serialize JSON to canonical format (sorted keys, compact)
+        // This ensures deterministic serialization for consistent signatures
+        let canonical_json = canonicalize_json(data)?;
+
+        // Sign the canonical bytes
+        self.sign(&canonical_json)
     }
 }
 
 // Implement Clone so we can share KeyManager across threads
-// Note: This doesn't actually clone the private key - it uses Arc internally
+// Note: SecretKey and PublicKey implement Copy, so no heap allocation needed
 impl Clone for KeyManager {
     fn clone(&self) -> Self {
         Self {
-            private_key: self.private_key.clone(),
-            public_key: self.public_key.clone(),
+            private_key: self.private_key,
+            public_key: self.public_key,
             secp: Secp256k1::new(),
         }
     }

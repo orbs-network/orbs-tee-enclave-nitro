@@ -1,0 +1,129 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  # Run tests on multiple platforms
+  test:
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Rust stable
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+
+    - name: Cache cargo registry
+      uses: actions/cache@v4
+      with:
+        path: ~/.cargo/registry
+        key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Cache cargo index
+      uses: actions/cache@v4
+      with:
+        path: ~/.cargo/git
+        key: ${{ runner.os }}-cargo-git-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Cache cargo build
+      uses: actions/cache@v4
+      with:
+        path: target
+        key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Run tests (cross-platform, no nitro features)
+      run: cargo test --no-default-features --verbose
+
+    - name: Run tests with nitro features (Linux only)
+      if: runner.os == 'Linux'
+      run: cargo test --verbose
+
+  # Check code formatting
+  format:
+    name: Check formatting
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Rust stable
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+        components: rustfmt
+
+    - name: Check formatting
+      run: cargo fmt --all -- --check
+
+  # Run clippy lints
+  clippy:
+    name: Clippy lints
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Rust stable
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+        components: clippy
+
+    - name: Run clippy (no nitro features)
+      run: cargo clippy --no-default-features --all-targets -- -D warnings
+
+    - name: Run clippy (with nitro features)
+      run: cargo clippy --all-targets -- -D warnings
+
+  # Check that price-oracle example compiles on Linux
+  example:
+    name: Check price-oracle example
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Rust stable
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+
+    - name: Check price-oracle example compiles
+      run: cargo check --example price-oracle --verbose
+      working-directory: examples/price-oracle
+
+  # Check minimum supported Rust version
+  msrv:
+    name: Check MSRV (1.83)
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Rust 1.83
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: 1.83
+
+    - name: Check with MSRV
+      run: cargo check --no-default-features --verbose
