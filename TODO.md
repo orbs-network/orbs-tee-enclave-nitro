@@ -144,13 +144,22 @@ This SDK is part of a larger ORBS TEE system with 5 components:
 
 ## Nice to Have
 
-### 7. ⏳ Add signature verification example
-**Status:** Pending
+### 7. ✅ Add signature verification example
+**Status:** Complete
 **Description:** Show host-side signature verification
 **Tasks:**
-- [ ] Create example showing signature verification
-- [ ] Document how to verify with secp256k1
-- [ ] Show TypeScript/Rust verification examples
+- [x] Create example showing signature verification
+- [x] Document how to verify with secp256k1
+- [x] Show TypeScript/Rust verification examples
+
+**Implementation:**
+- Created `examples/signature-verification/` directory
+- Rust example (`src/main.rs`) - Complete verification implementation with tests
+- JavaScript example (`verify.js`) - Node.js verification
+- TypeScript example (`verify.ts`) - Type-safe verification
+- Comprehensive README with integration examples
+- Added signature verification section to main README
+- Documented JSON canonicalization and security best practices
 
 ### 8. ⏳ Add benchmarks for crypto operations
 **Status:** Pending
@@ -208,6 +217,7 @@ This SDK is part of a larger ORBS TEE system with 5 components:
 - ✅ Update CLAUDE.md with test information
 - ✅ Update README with comprehensive testing documentation
 - ✅ Verify price-oracle example compiles (Linux-only)
+- ✅ Add signature verification examples (Rust, JavaScript, TypeScript)
 
 ---
 

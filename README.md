@@ -208,6 +208,114 @@ impl EnclaveApp for PriceOracle {
 }
 ```
 
+## Signature Verification
+
+The SDK automatically signs responses using ECDSA (secp256k1) + SHA-256. You can verify these signatures on the host side to ensure responses haven't been tampered with.
+
+### Quick Start
+
+See `examples/signature-verification/` for complete verification examples in Rust, JavaScript, and TypeScript.
+
+**Rust Example:**
+```bash
+cd examples/signature-verification
+cargo run
+```
+
+**JavaScript Example:**
+```bash
+cd examples/signature-verification
+npm install
+node verify.js
+```
+
+**TypeScript Example:**
+```bash
+cd examples/signature-verification
+npm install
+npm run verify-ts
+```
+
+### How It Works
+
+1. **Enclave signs response** with ECDSA using its private key
+2. **Response includes** both data and signature (hex-encoded)
+3. **Host verifies signature** using enclave's public key
+4. **Public key** comes from attestation document
+
+### Signature Format
+
+- **Algorithm**: ECDSA (Elliptic Curve Digital Signature Algorithm)
+- **Curve**: secp256k1 (same as Bitcoin/Ethereum)
+- **Hash**: SHA-256
+- **Size**: 64 bytes (32 bytes r + 32 bytes s), hex-encoded in JSON
+- **Public Key**: 33 bytes compressed format
+
+### Verification Example (Rust)
+
+```rust
+use signature_verification::verify_json_signature;
+use orbs_tee_protocol::TeeResponse;
+
+// Parse response from enclave
+let response: TeeResponse = serde_json::from_slice(&response_bytes)?;
+
+// Verify signature
+if let (Some(data), Some(signature)) = (&response.data, &response.signature) {
+    let valid = verify_json_signature(data, signature, &enclave_public_key)?;
+
+    if !valid {
+        return Err("Invalid signature - response may have been tampered with".into());
+    }
+
+    // Signature is valid - safe to use the data
+    println!("Data: {}", data);
+}
+```
+
+### Verification Example (JavaScript)
+
+```javascript
+const { verifyJSONSignature } = require('./examples/signature-verification/verify');
+
+// Parse response
+const response = JSON.parse(responseBytes);
+
+// Verify signature
+if (response.data && response.signature) {
+    const valid = verifyJSONSignature(
+        response.data,
+        response.signature,
+        enclavePublicKey
+    );
+
+    if (!valid) {
+        throw new Error('Invalid signature');
+    }
+
+    console.log('Data:', response.data);
+}
+```
+
+### JSON Canonicalization
+
+The SDK uses canonical JSON serialization for deterministic signatures:
+- Object keys sorted alphabetically
+- Compact format (no whitespace)
+- Consistent across all implementations
+
+**Important**: Your verification code MUST use the same canonicalization! See the examples for reference implementations.
+
+### Security Notes
+
+- ✅ Always verify signatures before trusting response data
+- ✅ Validate public key against attestation document
+- ✅ Reject responses with invalid signatures
+- ❌ Never skip signature verification (even in testing)
+- ❌ Don't trust responses without valid signatures
+
+For complete documentation, see [examples/signature-verification/README.md](examples/signature-verification/README.md).
+
 ## Building and Testing
 
 ### Build Commands

@@ -12,7 +12,8 @@
       "Bash(break)",
       "Bash(echo:*)",
       "Bash(done)",
-      "Read(//private/tmp/**)"
+      "Read(//private/tmp/**)",
+      "Bash(gh run watch:*)"
     ],
     "deny": [],
     "ask": []

@@ -1,0 +1,29 @@
+{
+  "name": "orbs-tee-signature-verification",
+  "version": "0.1.0",
+  "description": "Signature verification examples for ORBS TEE Nitro enclaves",
+  "main": "verify.js",
+  "scripts": {
+    "verify": "node verify.js",
+    "verify-ts": "ts-node verify.ts"
+  },
+  "keywords": [
+    "tee",
+    "enclave",
+    "nitro",
+    "signature",
+    "verification",
+    "secp256k1"
+  ],
+  "author": "ORBS Network",
+  "license": "MIT",
+  "dependencies": {
+    "secp256k1": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/secp256k1": "^4.0.6",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.0.0"
+  }
+}
