@@ -234,7 +234,7 @@ cargo clippy
 
 ### Running Tests
 
-The SDK includes comprehensive test coverage with 16 tests across cryptography and runtime components.
+The SDK includes comprehensive test coverage with 25 tests across cryptography, runtime, and end-to-end integration.
 
 #### Cross-Platform Testing
 
@@ -263,13 +263,20 @@ cargo test --test runtime_tests
 
 The test suite is organized into:
 
-- **Unit Tests** (`tests/crypto_tests.rs` - 10 tests)
+- **Crypto Tests** (`tests/crypto_tests.rs` - 12 tests)
   - Key generation and uniqueness
   - Signature creation and verification
   - Public key serialization
   - JSON signing and verification
 
-- **Integration Tests** (`tests/runtime_tests.rs` - 6 tests)
+- **Integration Tests** (`tests/integration_tests.rs` - 7 tests)
+  - Full request/response flow with mock vsocket
+  - Concurrent request handling (10 concurrent requests)
+  - Error handling and malformed requests
+  - Signed and unsigned responses
+  - Unknown method handling
+
+- **Runtime Tests** (`tests/runtime_tests.rs` - 6 tests)
   - EnclaveRuntime initialization
   - Request handling and routing
   - Response signing

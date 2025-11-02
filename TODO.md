@@ -125,14 +125,22 @@ This SDK is part of a larger ORBS TEE system with 5 components:
 - Separate jobs for: test, format, clippy, example, msrv
 - Uses caching for faster builds
 
-### 6. ⏳ Add integration test with full EnclaveRuntime
-**Status:** Pending
+### 6. ✅ Add integration test with full EnclaveRuntime
+**Status:** Complete
 **Description:** More comprehensive runtime tests with mocking
 **Tasks:**
-- [ ] Create mock vsock implementation
-- [ ] Add end-to-end runtime tests
-- [ ] Test request/response full cycle
-- [ ] Test concurrent request handling
+- [x] Create mock vsock implementation (using Unix domain sockets)
+- [x] Add end-to-end runtime tests (7 new tests)
+- [x] Test request/response full cycle
+- [x] Test concurrent request handling (10 concurrent requests)
+- [x] Test error handling and malformed requests
+- [x] Test signed and unsigned responses
+
+**Implementation:**
+- Created `tests/integration_tests.rs` (519 lines)
+- MockVsockServer simulates vsocket using Unix domain sockets
+- Can test full flow on macOS without Linux dependencies
+- 7 comprehensive integration tests covering all scenarios
 
 ## Nice to Have
 
@@ -185,18 +193,20 @@ This SDK is part of a larger ORBS TEE system with 5 components:
 
 ## Completed ✅
 
-- ✅ Add comprehensive test suite (16 tests)
+- ✅ Add comprehensive test suite (25 tests: 12 crypto + 7 integration + 6 runtime)
 - ✅ Complete source implementations (lib.rs, app.rs)
 - ✅ Complete vsock module (replaced pseudocode with real implementation)
 - ✅ Complete nitro module (NSM attestation)
-- ✅ Organize tests in separate files (tests/crypto_tests.rs, tests/runtime_tests.rs)
+- ✅ Organize tests in separate files (tests/crypto_tests.rs, tests/runtime_tests.rs, tests/integration_tests.rs)
 - ✅ Switch to published crates.io dependency (orbs-tee-protocol v0.1.4)
-- ✅ Add crypto module tests (10 tests)
+- ✅ Add crypto module tests (12 tests)
 - ✅ Add runtime tests (6 tests)
+- ✅ Add integration tests with mocks (7 tests)
 - ✅ Fix all compilation errors
 - ✅ Make nitro features optional
 - ✅ Add GitHub Actions CI/CD (multi-platform testing)
 - ✅ Update CLAUDE.md with test information
+- ✅ Update README with comprehensive testing documentation
 - ✅ Verify price-oracle example compiles (Linux-only)
 
 ---
