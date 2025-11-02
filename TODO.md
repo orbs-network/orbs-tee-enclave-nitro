@@ -19,14 +19,17 @@
 - Cannot test on macOS due to platform limitations
 - All syntax and API usage verified ✅
 
-### 2. ⏳ Update CLAUDE.md
-**Status:** Pending
+### 2. ✅ Update CLAUDE.md
+**Status:** Complete
 **Description:** Add test information and new directory structure
 **Tasks:**
-- [ ] Document tests/ directory structure
-- [ ] Add test running instructions
-- [ ] Update architecture section with complete implementations
-- [ ] Add cross-platform testing notes
+- [x] Document tests/ directory structure
+- [x] Add test running instructions
+- [x] Update architecture section with complete implementations
+- [x] Add cross-platform testing notes
+- [x] Document feature flags
+- [x] Update dependencies section
+- [x] Add MSRV information
 
 ### 3. ⏳ Verify nitro and vsock modules are complete
 **Status:** Pending
