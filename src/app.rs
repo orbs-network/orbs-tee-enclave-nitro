@@ -12,6 +12,9 @@ use crate::nitro::NitroAttestation;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
+#[cfg(feature = "nitro")]
+use base64;
+
 /// The main runtime that runs the enclave application
 /// This is what brings everything together:
 /// - Creates keys
@@ -115,11 +118,41 @@ impl<T: EnclaveApp + 'static> EnclaveRuntime<T> {
 
         println!("📨 Received request: {} - {}", request.id, request.method);
 
-        // Route to application handler
-        let app_response = {
-            let app = self.app.lock().await;
-            app.handle_request(&request.method, request.params.clone())
-                .await
+        // Handle built-in methods first
+        let app_response = match request.method.as_str() {
+            "get_attestation" => {
+                // Handle attestation request directly in runtime
+                let nonce = request.params.get("nonce")
+                    .and_then(|v| v.as_str())
+                    .map(|s| s.as_bytes().to_vec());
+
+                let user_data = request.params.get("user_data")
+                    .and_then(|v| v.as_str())
+                    .map(|s| s.as_bytes().to_vec());
+
+                match self.get_attestation(user_data, nonce) {
+                    Ok(attestation_doc) => {
+                        let public_key = self.key_manager.public_key_hex();
+                        Ok(crate::Response {
+                            data: serde_json::json!({
+                                "attestation_document": base64::encode(&attestation_doc),
+                                "public_key": public_key,
+                                "document_size": attestation_doc.len()
+                            }),
+                            sign: false, // Attestation is already signed by NSM
+                        })
+                    }
+                    Err(e) => Err(crate::AppError::InternalError(
+                        format!("Failed to generate attestation: {}", e)
+                    ))
+                }
+            }
+            _ => {
+                // Route to application handler for custom methods
+                let app = self.app.lock().await;
+                app.handle_request(&request.method, request.params.clone())
+                    .await
+            }
         };
 
         // Build response

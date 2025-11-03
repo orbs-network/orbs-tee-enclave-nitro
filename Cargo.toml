@@ -40,6 +40,9 @@ chrono = "0.4"                                         # Date/time handling
 # Hex encoding
 hex = "0.4"                                            # For hex encoding/decoding
 
+# Base64 encoding
+base64 = "0.21"                                        # For base64 encoding
+
 # Additional dependencies
 libc = "0.2"                                           # For closing file descriptors
 
