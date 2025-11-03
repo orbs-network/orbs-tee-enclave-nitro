@@ -8,6 +8,8 @@ This is the **ORBS TEE Nitro SDK** - a Rust framework for building AWS Nitro Enc
 
 **Key insight**: This SDK acts as a runtime that orchestrates cryptographic operations, attestation, and communication, allowing developers to focus solely on their business logic.
 
+**Integration Testing**: See `/home/ubuntu/INTEGRATION_TESTING.md` for complete guide on testing enclave + host communication.
+
 ## Build and Test Commands
 
 ### Development (macOS/Linux without Nitro)
