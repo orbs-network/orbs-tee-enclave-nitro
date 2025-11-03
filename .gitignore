@@ -45,3 +45,6 @@ config
 # Nitro Enclave specific
 *.eif
 
+
+# SSL certificates
+*.pem
