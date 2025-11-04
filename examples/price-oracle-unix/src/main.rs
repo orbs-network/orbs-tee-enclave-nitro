@@ -192,21 +192,12 @@ async fn handle_request(request: &TeeRequest, key_manager: &KeyManager) -> TeeRe
         }
 
         "get_attestation" => {
-            println!("  📜 Generating mock attestation (no real Nitro available)");
+            println!("  ❌ Attestation not available - no NSM device");
 
-            let data = json!({
-                "public_key": key_manager.public_key_hex(),
-                "note": "Mock attestation - no Nitro NSM device available",
-                "timestamp": chrono::Utc::now().timestamp(),
-            });
-
-            TeeResponse {
-                id: request.id.clone(),
-                success: true,
-                data: Some(data),
-                signature: None,
-                error: None,
-            }
+            TeeResponse::error(
+                request.id.clone(),
+                "Attestation not available. NSM device (/dev/nsm) not found. Real attestation requires running inside AWS Nitro Enclave.".to_string(),
+            )
         }
 
         _ => TeeResponse::error(
